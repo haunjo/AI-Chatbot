@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from pyparsing import col
 
-POPULATION_SIZE = 5 	# 개체 집단의 크기
+POPULATION_SIZE = 10 	# 개체 집단의 크기
 MUTATION_RATE = 0.125		# 돌연 변이 확률
 SIZE = 8				# 하나의 염색체에서 유전자 개수		
 fitness = []
@@ -163,7 +163,7 @@ while population[0].cal_fitness() < 28:
     for x in population[:3]:
         fitness.append(x.cal_fitness())
     count += 1
-    if count > 3000 :
+    if count > 100 :
         plt.plot(fitness)
         plt.show()
         break

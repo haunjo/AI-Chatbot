@@ -1,8 +1,31 @@
 import random
+from tempfile import tempdir
+
+#TSP알고리즘
+
 
 POPULATION_SIZE = 5		# 개체 집단의 크기
 MUTATION_RATE = 0.1			# 돌연 변이 확률
-SIZE = 5				# 하나의 염색체에서 유전자 개수		
+SIZE = 9		# 하나의 염색체에서 유전자 개수		
+
+"""
+    
+서울 : 0 인천 : 1 대전 : 2 춘천 : 3 강릉 : 4 대구 : 5 울산 : 6 부산 : 7 광주 : 8
+    
+"""
+
+#distance[x][y] 를 참조하면 x와 y의 거리를 알 수 있음
+distance = [
+         [0, 30, 140, 75, 168, 237, 303, 325, 268],
+         [30, 0, 140, 105, 198, 247, 315, 334, 257],
+         [140, 140, 0, 173, 205, 119, 190, 200, 141],
+         [75, 105, 173, 0, 102, 238, 293, 323, 313],
+         [168, 198, 205, 102, 0, 213, 247, 287, 340],
+         [237, 247, 119, 238, 213, 0, 71, 88, 173],
+         [303, 315, 190, 293, 247, 71, 0, 44, 222],
+         [325, 334, 200, 323, 287, 88, 44, 0, 202],
+         [268, 257, 141, 313, 340, 173, 222, 202, 0]
+          ]
 
 
 
@@ -13,16 +36,31 @@ class Chromosome:
         self.fitness = 0		# 적합도
         if self.genes.__len__()==0:	# 염색체가 초기 상태이면 초기화한다. 
             i = 0
-            while i<SIZE:
-                if random.random() >= 0.5: self.genes.append(1)
-                else: self.genes.append(0)
+            x = 0
+            self.genes.append(x)
+            self.genes.append(random.randint(1,8))
+            while len(self.genes) < SIZE:
+                self.genes.append(self.Find_nearst(self.genes[i+1]))
                 i += 1
+                 
+    #a = 3
+    #[75, 105, 173, 0, 102, 238, 293, 323, 313]
+    #sorted = [0, 75,102,105, 173, 238, 293,313,323]
+    def Find_nearst(self, a):
+        nearest = sorted(distance[a])
+        for i in nearest[1:]:
+            if distance[a].index(i) not in self.genes:
+                y = distance[a].index(i)
+                return y           
+        
+    
     
     def cal_fitness(self):		# 적합도를 계산한다. 
         self.fitness = 0
         value = 0
-        for i in range(SIZE):
-            value += self.genes[i]*pow(2,SIZE-1-i)
+        for i in range(len(self.genes)-1):
+            value += distance[self.genes[i]][self.genes[i+1]]
+        value += distance[self.genes[-1]][0]
         self.fitness = value
         return self.fitness
 
@@ -53,19 +91,57 @@ def select(pop):
 def crossover(pop):
     father = select(pop)
     mother = select(pop)
-    index = random.randint(1, SIZE - 2)
-    child1 = father.genes[:index] + mother.genes[index:] 
-    child2 = mother.genes[:index] + father.genes[index:] 
+    print("father", father.genes, "mother", mother.genes)
+    idx1, idx2 = random.sample(range(1, SIZE), 2)
+    if idx1 > idx2:
+        idx1, idx2 = idx2, idx1
+    print(idx1, idx2)
+    
+    child1, child2 = [9,9,9,9,9,9,9,9,9],  [9,9,9,9,9,9,9,9,9]
+    mother.genes[idx1:idx2], father.genes[idx1:idx2] = father.genes[idx1:idx2] , mother.genes[idx1:idx2]
+    child2[idx1:idx2], child1[idx1:idx2] = mother.genes[idx1:idx2], father.genes[idx1:idx2]
+    print("child1", child1, "child2", child2,"\n", "father", father.genes, "mother", mother.genes)
+    
+    print(idx1,idx2)
+    father.genes = father.genes[:idx1] + father.genes[idx2:]
+    mother.genes = mother.genes[:idx1] + mother.genes[idx2:]
+    print("child1", child1, "child2", child2,"\n", "father", father.genes, "mother", mother.genes)
+
+    for i in father.genes:
+        if i in child1:
+            father.genes[father.genes.index(i)] = child2[child1.index(i)]
+    for i in mother.genes:
+        if i in child2:
+            mother.genes[mother.genes.index(i)] = child1[child2.index(i)]
+    print("child1", child1, "child2", child2,"\n", "father", father.genes, "mother", mother.genes)
+            
+    for i in father.genes:
+        if 9 in child1:
+            child1[child1.index(9)] = i
+    for i in mother.genes:
+        if 9 in child2:
+            child2[child2.index(9)] = i
+        
+    print("child1", child1, "child2", child2,"\n")
     return (child1, child2)
     
 # 돌연변이 연산
 def mutate(c):
     for i in range(SIZE):
         if random.random() < MUTATION_RATE:
-            if random.random() < 0.5:
-                c.genes[i] = 1
-            else:
-                c.genes[i] = 0
+            target1, target2 = random.sample(range(0,SIZE), 2)
+            #temp = c.genes[target1]
+            #c.genes[target1] = c.genes[target2]
+            #c.genes[target2] = temp
+            #c.genes[target1], c.genes[target2] = c.genes[target2], c.genes[target1]
+            c.genes[target1], c.genes[target2] = swap(c.genes[target1], c.genes[target2])
+       
+
+def swap(a,b):
+    temp = a
+    a = b
+    b = temp
+    return a, b
 
 # 메인 프로그램
 population = []
@@ -77,19 +153,19 @@ while i<POPULATION_SIZE:
     i += 1
 
 count=0
-population.sort(key=lambda x: x.cal_fitness(), reverse=True)
+population.sort(key=lambda x: x.cal_fitness(), reverse=False)
 print("세대 번호=", count)
 print_p(population)
 count=1
 
-while population[0].cal_fitness() < 31:
+while population[0].cal_fitness() > 566:
     new_pop = []
 
     # 선택과 교차 연산
     for _ in range(POPULATION_SIZE//2):
-        c1, c2 = crossover(population);
-        new_pop.append(Chromosome(c1));
-        new_pop.append(Chromosome(c2));
+        c1, c2 = crossover(population)
+        new_pop.append(Chromosome(c1))
+        new_pop.append(Chromosome(c2))
 
     # 자식 세대가 부모 세대를 대체한다. 
     # 깊은 복사를 수행한다. 
@@ -99,8 +175,8 @@ while population[0].cal_fitness() < 31:
     for c in population: mutate(c)
 
     # 출력을 위한 정렬
-    population.sort(key=lambda x: x.cal_fitness(), reverse=True)
+    population.sort(key=lambda x: x.cal_fitness(), reverse=False)
     print("세대 번호=", count)
     print_p(population)
     count += 1
-    if count > 100 : break;
+    if count > 5 : break

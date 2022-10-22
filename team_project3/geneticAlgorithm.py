@@ -15,6 +15,7 @@ class Chromosome:
                 if random.random() >= 0.5: self.genes.append(1)
                 else: self.genes.append(0)
                 i += 1
+
     
     def cal_fitness(self):		# 적합도를 계산한다. 
         self.fitness = 0
@@ -55,6 +56,7 @@ def crossover(pop):
     child1 = father.genes[:index] + mother.genes[index:] 
     child2 = mother.genes[:index] + father.genes[index:] 
     return (child1, child2)
+
     
 # 돌연변이 연산
 def mutate(c):
