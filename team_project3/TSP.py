@@ -1,13 +1,13 @@
 import random
 from tempfile import tempdir
-
+import matplotlib.pyplot as plt
 #TSP알고리즘
 
 
 POPULATION_SIZE = 5		# 개체 집단의 크기
 MUTATION_RATE = 0.1			# 돌연 변이 확률
 SIZE = 9		# 하나의 염색체에서 유전자 개수		
-
+fitness = []
 """
     
 서울 : 0 인천 : 1 대전 : 2 춘천 : 3 강릉 : 4 대구 : 5 울산 : 6 부산 : 7 광주 : 8
@@ -91,38 +91,29 @@ def select(pop):
 def crossover(pop):
     father = select(pop)
     mother = select(pop)
-    print("father", father.genes, "mother", mother.genes)
+    #print("father", father.genes, "mother", mother.genes)
     idx1, idx2 = random.sample(range(1, SIZE), 2)
     if idx1 > idx2:
         idx1, idx2 = idx2, idx1
-    print(idx1, idx2)
-    
-    child1, child2 = [9,9,9,9,9,9,9,9,9],  [9,9,9,9,9,9,9,9,9]
-    mother.genes[idx1:idx2], father.genes[idx1:idx2] = father.genes[idx1:idx2] , mother.genes[idx1:idx2]
-    child2[idx1:idx2], child1[idx1:idx2] = mother.genes[idx1:idx2], father.genes[idx1:idx2]
-    print("child1", child1, "child2", child2,"\n", "father", father.genes, "mother", mother.genes)
-    
-    print(idx1,idx2)
-    father.genes = father.genes[:idx1] + father.genes[idx2:]
-    mother.genes = mother.genes[:idx1] + mother.genes[idx2:]
-    print("child1", child1, "child2", child2,"\n", "father", father.genes, "mother", mother.genes)
-
-    for i in father.genes:
-        if i in child1:
-            father.genes[father.genes.index(i)] = child2[child1.index(i)]
-    for i in mother.genes:
-        if i in child2:
-            mother.genes[mother.genes.index(i)] = child1[child2.index(i)]
-    print("child1", child1, "child2", child2,"\n", "father", father.genes, "mother", mother.genes)
-            
-    for i in father.genes:
-        if 9 in child1:
-            child1[child1.index(9)] = i
-    for i in mother.genes:
-        if 9 in child2:
-            child2[child2.index(9)] = i
+    #print(idx1,idx2)
+    a = father.genes[idx1:idx2]
+    b = mother.genes[idx1:idx2]
+    #print(a, b)
+    child1 = father.genes
+    child2 = mother.genes
+    #print("child1", child1, "child2", child2)
+    for i in b:
+        d = child1.index(i)
+        temper1 = child1[d]
+        child1[d] = child1[idx1 + b.index(i)]
+        child1[idx1 + b.index(i)] = temper1
+    for j in a:
+        c = child2.index(j)
+        temper2 = child2[c]
+        child2[c] = child2[idx1 + a.index(j)]
+        child2[idx1 + a.index(j)] = temper2
+    #print("child1", child1, "child2", child2)
         
-    print("child1", child1, "child2", child2,"\n")
     return (child1, child2)
     
 # 돌연변이 연산
@@ -178,5 +169,11 @@ while population[0].cal_fitness() > 566:
     population.sort(key=lambda x: x.cal_fitness(), reverse=False)
     print("세대 번호=", count)
     print_p(population)
+    for x in population[:3]:
+        fitness.append(x.cal_fitness())
     count += 1
-    if count > 5 : break
+    if count > 100 : 
+        plt.plot(fitness)
+        plt.show()
+        break
+    
