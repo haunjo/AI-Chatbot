@@ -1,11 +1,14 @@
 import random
 from itertools import combinations
+import matplotlib.pyplot as plt
 
 from pyparsing import col
 
-POPULATION_SIZE = 5		# 개체 집단의 크기
-MUTATION_RATE = 0.1		# 돌연 변이 확률
+POPULATION_SIZE = 5 	# 개체 집단의 크기
+MUTATION_RATE = 0.125		# 돌연 변이 확률
 SIZE = 8				# 하나의 염색체에서 유전자 개수		
+fitness = []
+Supergene = 0
 
 # 염색체를 클래스로 정의한다. 
 class Chromosome:
@@ -115,9 +118,9 @@ def mutate(c):
 population = []
 i=0
 
-a = Chromosome()
-a.genes = [3,6,2,7,1,4,0,5]
-print(a.cal_fitness())
+#a = Chromosome()
+#a.genes = [3,6,2,7,1,4,0,5]
+#print(a.cal_fitness())
 
 # 초기 염색체를 생성하여 객체 집단에 추가한다. 
 while i<POPULATION_SIZE:
@@ -133,6 +136,9 @@ count=1
 while population[0].cal_fitness() < 28:
     new_pop = []
 
+    #엘리트교배, 적합도가 가장 높았던 부모의 유전자를 그대로 가져옴
+    new_pop.append(population[0])
+
     # 선택과 교차 연산
     for _ in range(POPULATION_SIZE//2):
         c1, c2 = crossover(population)
@@ -140,22 +146,33 @@ while population[0].cal_fitness() < 28:
         new_pop.append(Chromosome(c2))
     
     #엘리트교배, 적합도가 가장 높았던 부모의 유전자를 그대로 가져옴
-    new_pop.append(population[0])
+    #new_pop.append(population[0])
     
     # 자식 세대가 부모 세대를 대체한다. 
     # 깊은 복사를 수행한다. 
     population = new_pop.copy();    
     
     # 돌연변이 연산
-    for c in population: mutate(c)
+    # 적합도가 27 이상인 유전자가 나오면 그 유전자에 대해서는 돌연변이를 수행하지 않는다.
+    for c in population[Supergene:]: mutate(c)
 
     # 출력을 위한 정렬
     population.sort(key=lambda x: x.cal_fitness(), reverse=True)
     print("세대 번호=", count)
     print_p(population)
+    for x in population[:3]:
+        fitness.append(x.cal_fitness())
     count += 1
-    if count > 2000 : break
+    if count > 3000 :
+        plt.plot(fitness)
+        plt.show()
+        break
     
     #변이확률의 동적변화
-    if population[0].cal_fitness() > 26:
+    if population[0].cal_fitness() >= 26:
         MUTATION_RATE = 0.075
+        Supergene = 1
+
+if population[0].cal_fitness() == 28:
+    plt.plot(fitness)
+    plt.show()
