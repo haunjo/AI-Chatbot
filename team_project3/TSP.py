@@ -8,6 +8,9 @@ POPULATION_SIZE = 5		# 개체 집단의 크기
 MUTATION_RATE = 0.1			# 돌연 변이 확률
 SIZE = 9		# 하나의 염색체에서 유전자 개수		
 fitness = []
+
+Supergene = 0
+
 """
     
 서울 : 0 인천 : 1 대전 : 2 춘천 : 3 강릉 : 4 대구 : 5 울산 : 6 부산 : 7 광주 : 8
@@ -52,8 +55,6 @@ class Chromosome:
             if distance[a].index(i) not in self.genes:
                 y = distance[a].index(i)
                 return y           
-        
-    
     
     def cal_fitness(self):		# 적합도를 계산한다. 
         self.fitness = 0
@@ -61,7 +62,7 @@ class Chromosome:
         for i in range(len(self.genes)-1):
             value += distance[self.genes[i]][self.genes[i+1]]
         value += distance[self.genes[-1]][0]
-        self.fitness = value
+        self.fitness = 3000 - value
         return self.fitness
 
     def __str__(self):
@@ -80,7 +81,6 @@ def select(pop):
     max_value  = sum([c.cal_fitness() for c in population])
     pick    = random.uniform(0, max_value)
     current = 0
-    
     # 룰렛휠에서 어떤 조각에 속하는지를 알아내는 루프
     for c in pop:
         current += c.cal_fitness()
@@ -113,14 +113,13 @@ def crossover(pop):
         child2[c] = child2[idx1 + a.index(j)]
         child2[idx1 + a.index(j)] = temper2
     #print("child1", child1, "child2", child2)
-        
     return (child1, child2)
     
 # 돌연변이 연산
 def mutate(c):
     for i in range(SIZE):
         if random.random() < MUTATION_RATE:
-            target1, target2 = random.sample(range(0,SIZE), 2)
+            target1, target2 = random.sample(range(1,SIZE), 2)
             #temp = c.genes[target1]
             #c.genes[target1] = c.genes[target2]
             #c.genes[target2] = temp
@@ -144,14 +143,17 @@ while i<POPULATION_SIZE:
     i += 1
 
 count=0
-population.sort(key=lambda x: x.cal_fitness(), reverse=False)
+population.sort(key=lambda x: x.cal_fitness(), reverse=True)
 print("세대 번호=", count)
 print_p(population)
 count=1
 
-while population[0].cal_fitness() > 566:
+while population[0].cal_fitness() < 2000:
     new_pop = []
 
+    new_pop.append(Chromosome(population[0].genes))
+    #엘리트교배, 적합도가 가장 높았던 부모의 유전자를 그대로 가져옴
+    print_p(new_pop)
     # 선택과 교차 연산
     for _ in range(POPULATION_SIZE//2):
         c1, c2 = crossover(population)
@@ -160,20 +162,29 @@ while population[0].cal_fitness() > 566:
 
     # 자식 세대가 부모 세대를 대체한다. 
     # 깊은 복사를 수행한다. 
+    #print_p(new_pop)
     population = new_pop.copy();    
     
     # 돌연변이 연산
-    for c in population: mutate(c)
+    #print_p(population)
+    population.sort(key=lambda x: x.cal_fitness(), reverse=True)
+    #print(Supergene)
+    if population[0].cal_fitness() >= 1500:
+        MUTATION_RATE = 0.075
+        Supergene = 1
+        
+    for c in population[Supergene:]: mutate(c)
 
     # 출력을 위한 정렬
-    population.sort(key=lambda x: x.cal_fitness(), reverse=False)
+    population.sort(key=lambda x: x.cal_fitness(), reverse=True)
     print("세대 번호=", count)
     print_p(population)
     for x in population[:3]:
         fitness.append(x.cal_fitness())
     count += 1
-    if count > 100 : 
+    if count > 5 : 
         plt.plot(fitness)
         plt.show()
         break
+    
     
