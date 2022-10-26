@@ -56,16 +56,6 @@ class Chromosome:
                         collision = collision + 1
         self.fitness = 28 - collision
         return self.fitness
-            
-
-        """
-        self.fitness = 0
-        value = 0
-        for i in range(SIZE):
-            value += self.genes[i]*pow(2,SIZE-1-i)
-        self.fitness = value
-        return self.fitness
-        """
 
     def __str__(self):
         return self.genes.__str__()

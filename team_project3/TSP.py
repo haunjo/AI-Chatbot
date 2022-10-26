@@ -182,7 +182,7 @@ while population[0].cal_fitness() < 2000:
     for x in population[:3]:
         fitness.append(x.cal_fitness())
     count += 1
-    if count > 5 : 
+    if count > 100 : 
         plt.plot(fitness)
         plt.show()
         break
