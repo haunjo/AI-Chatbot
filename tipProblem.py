@@ -41,8 +41,11 @@ import matplotlib.pyplot as plt
 #   * Quality and service on subjective ranges [0, 10]
 #   * Tip has a range of [0, 25] in units of percentage points
 x_qual = np.arange(0, 11, 1)
+print(x_qual)
 x_serv = np.arange(0, 11, 1)
+print(x_serv)
 x_tip  = np.arange(0, 26, 1)
+print(x_tip)
 
 # Generate fuzzy membership functions
 qual_lo = fuzz.trimf(x_qual, [0, 0, 5])
@@ -206,6 +209,9 @@ for ax in (ax0,):
     ax.get_yaxis().tick_left()
 
 plt.tight_layout()
+
+
+plt.show()
 
 """
 .. image:: PLOT2RST.current_figure
